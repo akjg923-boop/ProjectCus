@@ -21,6 +21,7 @@ import {
   TrendingUp,
   ChevronDown,
   Zap,
+  X as CloseIcon,
 } from "lucide-react";
 
 type TabType = "overview" | "services" | "orders" | "clients" | "media" | "cms" | "settings" | "reports";
@@ -46,6 +47,7 @@ export default function AdminDashboard() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [servicesOpen, setServicesOpen] = useState(false);
   const [activeService, setActiveService] = useState<ServiceType>(null);
+  const [showAddForm, setShowAddForm] = useState(false);
 
   // Fetch all data
   const { data: allModels = [] } = trpc.models.getAll.useQuery();
@@ -84,15 +86,70 @@ export default function AdminDashboard() {
     if (activeTab === "services" && activeService) {
       switch (activeService) {
         case "models":
-          return <DataTable title="إدارة الموديلات" data={allModels} columns={["name", "gender", "age"]} onDelete={(id) => deleteModelMutation.mutate({ id })} />;
+          return (
+            <>
+              {showAddForm && <AddModelForm onClose={() => setShowAddForm(false)} />}
+              <DataTable
+                title="إدارة الموديلات"
+                data={allModels}
+                columns={["name", "gender", "age"]}
+                onDelete={(id) => deleteModelMutation.mutate({ id })}
+                onAdd={() => setShowAddForm(true)}
+              />
+            </>
+          );
         case "voices":
-          return <DataTable title="إدارة التعليق الصوتي" data={allVoices} columns={["name", "gender", "voiceType"]} onDelete={(id) => deleteVoiceMutation.mutate({ id })} />;
+          return (
+            <>
+              {showAddForm && <AddVoiceForm onClose={() => setShowAddForm(false)} />}
+              <DataTable
+                title="إدارة التعليق الصوتي"
+                data={allVoices}
+                columns={["name", "gender", "voiceType"]}
+                onDelete={(id) => deleteVoiceMutation.mutate({ id })}
+                onAdd={() => setShowAddForm(true)}
+              />
+            </>
+          );
         case "creators":
-          return <DataTable title="إدارة صناع المحتوى" data={allCreators} columns={["name", "platforms"]} onDelete={(id) => deleteCreatorMutation.mutate({ id })} />;
+          return (
+            <>
+              {showAddForm && <AddCreatorForm onClose={() => setShowAddForm(false)} />}
+              <DataTable
+                title="إدارة صناع المحتوى"
+                data={allCreators}
+                columns={["name", "platforms"]}
+                onDelete={(id) => deleteCreatorMutation.mutate({ id })}
+                onAdd={() => setShowAddForm(true)}
+              />
+            </>
+          );
         case "videos":
-          return <DataTable title="إدارة إنتاج الفيديو" data={allVideos} columns={["title", "productionType"]} onDelete={(id) => deleteVideoMutation.mutate({ id })} />;
+          return (
+            <>
+              {showAddForm && <AddVideoForm onClose={() => setShowAddForm(false)} />}
+              <DataTable
+                title="إدارة إنتاج الفيديو"
+                data={allVideos}
+                columns={["title", "productionType"]}
+                onDelete={(id) => deleteVideoMutation.mutate({ id })}
+                onAdd={() => setShowAddForm(true)}
+              />
+            </>
+          );
         case "writers":
-          return <DataTable title="إدارة كتابة المحتوى" data={allWritings} columns={["title", "contentType"]} onDelete={(id) => deleteWritingMutation.mutate({ id })} />;
+          return (
+            <>
+              {showAddForm && <AddWriterForm onClose={() => setShowAddForm(false)} />}
+              <DataTable
+                title="إدارة كتابة المحتوى"
+                data={allWritings}
+                columns={["title", "contentType"]}
+                onDelete={(id) => deleteWritingMutation.mutate({ id })}
+                onAdd={() => setShowAddForm(true)}
+              />
+            </>
+          );
       }
     }
 
@@ -239,6 +296,7 @@ export default function AdminDashboard() {
                           onClick={() => {
                             setActiveTab("services");
                             setActiveService(subitem.id);
+                            setShowAddForm(false);
                           }}
                           className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition justify-end text-sm"
                           style={{
@@ -352,6 +410,594 @@ function ServicesOverviewTab({ models, voices, creators, videos, writings, onSel
   );
 }
 
+// Add Forms
+function AddModelForm({ onClose }: any) {
+  const [formData, setFormData] = useState({
+    name: "",
+    gender: "female",
+    age: "",
+    vimeoUrl: "",
+  });
+
+  const createMutation = trpc.models.create.useMutation();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(
+      {
+        name: formData.name,
+        gender: formData.gender,
+        age: parseInt(formData.age),
+        vimeoUrl: formData.vimeoUrl,
+      },
+      {
+        onSuccess: () => {
+          onClose();
+          setFormData({ name: "", gender: "female", age: "", vimeoUrl: "" });
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
+      <div className="p-8 rounded-xl w-full max-w-md" style={{ backgroundColor: COLORS.card }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold" style={{ color: COLORS.primary }}>
+            إضافة مودل جديد
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded">
+            <X size={24} style={{ color: COLORS.primary }} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              الاسم
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text, borderColor: COLORS.border }}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              الجنس
+            </label>
+            <select
+              value={formData.gender}
+              onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            >
+              <option value="female">أنثى</option>
+              <option value="male">ذكر</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              العمر
+            </label>
+            <input
+              type="number"
+              value={formData.age}
+              onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              رابط VIMEO (اختياري)
+            </label>
+            <input
+              type="url"
+              value={formData.vimeoUrl}
+              onChange={(e) => setFormData({ ...formData, vimeoUrl: e.target.value })}
+              placeholder="https://vimeo.com/..."
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 rounded-lg font-bold transition"
+            style={{ backgroundColor: COLORS.primary, color: COLORS.darker }}
+          >
+            إضافة
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AddCreatorForm({ onClose }: any) {
+  const [formData, setFormData] = useState({
+    name: "",
+    platforms: "",
+    specialization: "",
+    vimeoUrl: "",
+  });
+
+  const createMutation = trpc.contentCreators.create.useMutation();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(
+      {
+        name: formData.name,
+        platforms: formData.platforms,
+        specialization: formData.specialization,
+        vimeoUrl: formData.vimeoUrl,
+      },
+      {
+        onSuccess: () => {
+          onClose();
+          setFormData({ name: "", platforms: "", specialization: "", vimeoUrl: "" });
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
+      <div className="p-8 rounded-xl w-full max-w-md" style={{ backgroundColor: COLORS.card }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold" style={{ color: COLORS.primary }}>
+            إضافة صانع محتوى جديد
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded">
+            <X size={24} style={{ color: COLORS.primary }} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              الاسم
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              المنصات (مثال: Instagram, TikTok, YouTube)
+            </label>
+            <input
+              type="text"
+              value={formData.platforms}
+              onChange={(e) => setFormData({ ...formData, platforms: e.target.value })}
+              placeholder="Instagram, TikTok"
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              التخصص
+            </label>
+            <select
+              value={formData.specialization}
+              onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            >
+              <option value="">اختر التخصص</option>
+              <option value="beauty">جمال</option>
+              <option value="fashion">أزياء</option>
+              <option value="lifestyle">نمط حياة</option>
+              <option value="fitness">لياقة بدنية</option>
+              <option value="food">طعام</option>
+              <option value="travel">سفر</option>
+              <option value="education">تعليم</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              رابط VIMEO (اختياري)
+            </label>
+            <input
+              type="url"
+              value={formData.vimeoUrl}
+              onChange={(e) => setFormData({ ...formData, vimeoUrl: e.target.value })}
+              placeholder="https://vimeo.com/..."
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 rounded-lg font-bold transition"
+            style={{ backgroundColor: COLORS.primary, color: COLORS.darker }}
+          >
+            إضافة
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AddVoiceForm({ onClose }: any) {
+  const [formData, setFormData] = useState({
+    name: "",
+    gender: "female",
+    voiceType: "neutral",
+    language: "ar",
+    audioFile: null as File | null,
+  });
+
+  const createMutation = trpc.voiceArtists.create.useMutation();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.audioFile) {
+      alert("يرجى تحميل ملف صوتي");
+      return;
+    }
+
+    const formDataToSend = new FormData();
+    formDataToSend.append("name", formData.name);
+    formDataToSend.append("gender", formData.gender);
+    formDataToSend.append("voiceType", formData.voiceType);
+    formDataToSend.append("language", formData.language);
+    formDataToSend.append("audioFile", formData.audioFile);
+
+    createMutation.mutate(
+      {
+        name: formData.name,
+        gender: formData.gender,
+        voiceType: formData.voiceType,
+        language: formData.language,
+      },
+      {
+        onSuccess: () => {
+          onClose();
+          setFormData({ name: "", gender: "female", voiceType: "neutral", language: "ar", audioFile: null });
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
+      <div className="p-8 rounded-xl w-full max-w-md" style={{ backgroundColor: COLORS.card }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold" style={{ color: COLORS.primary }}>
+            إضافة معلق صوتي جديد
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded">
+            <X size={24} style={{ color: COLORS.primary }} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              الاسم
+            </label>
+            <input
+              type="text"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              الجنس
+            </label>
+            <select
+              value={formData.gender}
+              onChange={(e) => setFormData({ ...formData, gender: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            >
+              <option value="female">أنثى</option>
+              <option value="male">ذكر</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              نوع الصوت
+            </label>
+            <select
+              value={formData.voiceType}
+              onChange={(e) => setFormData({ ...formData, voiceType: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            >
+              <option value="neutral">محايد</option>
+              <option value="deep">عميق</option>
+              <option value="high">حاد</option>
+              <option value="soft">ناعم</option>
+              <option value="energetic">نشيط</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              اللغة
+            </label>
+            <select
+              value={formData.language}
+              onChange={(e) => setFormData({ ...formData, language: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            >
+              <option value="ar">العربية</option>
+              <option value="en">الإنجليزية</option>
+              <option value="fr">الفرنسية</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              تحميل ملف صوتي
+            </label>
+            <input
+              type="file"
+              accept="audio/*"
+              onChange={(e) => setFormData({ ...formData, audioFile: e.target.files?.[0] || null })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 rounded-lg font-bold transition"
+            style={{ backgroundColor: COLORS.primary, color: COLORS.darker }}
+          >
+            إضافة
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AddVideoForm({ onClose }: any) {
+  const [formData, setFormData] = useState({
+    title: "",
+    productionType: "commercial",
+    duration: "",
+    vimeoUrl: "",
+  });
+
+  const createMutation = trpc.videoProductions.create.useMutation();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(
+      {
+        title: formData.title,
+        productionType: formData.productionType,
+        duration: formData.duration,
+        vimeoUrl: formData.vimeoUrl,
+      },
+      {
+        onSuccess: () => {
+          onClose();
+          setFormData({ title: "", productionType: "commercial", duration: "", vimeoUrl: "" });
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
+      <div className="p-8 rounded-xl w-full max-w-md" style={{ backgroundColor: COLORS.card }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold" style={{ color: COLORS.primary }}>
+            إضافة فيديو جديد
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded">
+            <X size={24} style={{ color: COLORS.primary }} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              العنوان
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              نوع الإنتاج
+            </label>
+            <select
+              value={formData.productionType}
+              onChange={(e) => setFormData({ ...formData, productionType: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            >
+              <option value="commercial">إعلان تجاري</option>
+              <option value="documentary">وثائقي</option>
+              <option value="music_video">فيديو موسيقي</option>
+              <option value="tutorial">درس تعليمي</option>
+              <option value="promotional">ترويجي</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              المدة (بالدقائق)
+            </label>
+            <input
+              type="number"
+              value={formData.duration}
+              onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              رابط VIMEO
+            </label>
+            <input
+              type="url"
+              value={formData.vimeoUrl}
+              onChange={(e) => setFormData({ ...formData, vimeoUrl: e.target.value })}
+              placeholder="https://vimeo.com/..."
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 rounded-lg font-bold transition"
+            style={{ backgroundColor: COLORS.primary, color: COLORS.darker }}
+          >
+            إضافة
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+function AddWriterForm({ onClose }: any) {
+  const [formData, setFormData] = useState({
+    title: "",
+    contentType: "blog",
+    specialization: "",
+  });
+
+  const createMutation = trpc.contentWriting.create.useMutation();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    createMutation.mutate(
+      {
+        title: formData.title,
+        contentType: formData.contentType,
+        specialization: formData.specialization,
+      },
+      {
+        onSuccess: () => {
+          onClose();
+          setFormData({ title: "", contentType: "blog", specialization: "" });
+        },
+      }
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" dir="rtl">
+      <div className="p-8 rounded-xl w-full max-w-md" style={{ backgroundColor: COLORS.card }}>
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-bold" style={{ color: COLORS.primary }}>
+            إضافة كاتب محتوى جديد
+          </h2>
+          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded">
+            <X size={24} style={{ color: COLORS.primary }} />
+          </button>
+        </div>
+
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              العنوان
+            </label>
+            <input
+              type="text"
+              value={formData.title}
+              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              نوع المحتوى
+            </label>
+            <select
+              value={formData.contentType}
+              onChange={(e) => setFormData({ ...formData, contentType: e.target.value })}
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+            >
+              <option value="blog">مدونة</option>
+              <option value="social_media">وسائل اجتماعية</option>
+              <option value="seo">SEO</option>
+              <option value="copywriting">كتابة إعلانية</option>
+              <option value="technical">تقنية</option>
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm mb-2" style={{ color: COLORS.textSecondary }}>
+              التخصص
+            </label>
+            <input
+              type="text"
+              value={formData.specialization}
+              onChange={(e) => setFormData({ ...formData, specialization: e.target.value })}
+              placeholder="مثال: تكنولوجيا، صحة، تجارة"
+              className="w-full px-4 py-2 rounded-lg"
+              style={{ backgroundColor: COLORS.dark, color: COLORS.text }}
+              required
+            />
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 rounded-lg font-bold transition"
+            style={{ backgroundColor: COLORS.primary, color: COLORS.darker }}
+          >
+            إضافة
+          </button>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 function OrdersTab() {
   return (
     <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
@@ -418,7 +1064,7 @@ function ReportsTab() {
   );
 }
 
-function DataTable({ title, data, columns, onDelete }: any) {
+function DataTable({ title, data, columns, onDelete, onAdd }: any) {
   return (
     <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
       <div className="flex items-center justify-between mb-6">
@@ -426,6 +1072,7 @@ function DataTable({ title, data, columns, onDelete }: any) {
           {title}
         </h3>
         <button
+          onClick={onAdd}
           className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition"
           style={{
             backgroundColor: COLORS.primary,
