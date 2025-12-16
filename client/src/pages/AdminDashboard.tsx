@@ -20,10 +20,26 @@ import {
   FileText,
   TrendingUp,
   ChevronDown,
+  Zap,
 } from "lucide-react";
 
 type TabType = "overview" | "services" | "orders" | "clients" | "media" | "cms" | "settings" | "reports";
 type ServiceType = "models" | "voices" | "creators" | "videos" | "writers" | null;
+
+// Color Palette - Matching Rex Website
+const COLORS = {
+  primary: "#fbbf24", // Golden Yellow
+  secondary: "#f97316", // Orange
+  dark: "#0f172a", // Very Dark Blue
+  darker: "#020617", // Almost Black
+  card: "#1e293b", // Dark Blue-Gray
+  text: "#ffffff", // White
+  textSecondary: "#cbd5e1", // Light Gray
+  border: "#334155", // Medium Gray
+  success: "#22c55e", // Green
+  warning: "#ef4444", // Red
+  info: "#3b82f6", // Blue
+};
 
 export default function AdminDashboard() {
   const [activeTab, setActiveTab] = useState<TabType>("overview");
@@ -115,32 +131,67 @@ export default function AdminDashboard() {
   };
 
   return (
-    <div className="flex h-screen bg-gray-900" dir="rtl">
+    <div className="flex h-screen" style={{ backgroundColor: COLORS.dark }} dir="rtl">
       {/* Main Content */}
       <div className="flex-1 flex flex-col">
         {/* Header */}
-        <div className="bg-gray-800 border-b px-6 py-4 flex items-center justify-between shadow text-white" style={{ borderBottomColor: "#FFBD59" }}>
+        <div
+          className="border-b px-6 py-4 flex items-center justify-between shadow-lg"
+          style={{
+            backgroundColor: COLORS.darker,
+            borderBottomColor: COLORS.primary,
+            borderBottomWidth: "3px",
+          }}
+        >
           <div className="flex items-center gap-4">
-            <button onClick={() => setSidebarOpen(!sidebarOpen)} className="p-2 hover:bg-gray-700 rounded text-white">
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 rounded-lg transition"
+              style={{
+                color: COLORS.primary,
+                backgroundColor: COLORS.card,
+              }}
+            >
               {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
             </button>
           </div>
-          <h2 className="text-2xl font-bold text-white" style={{ color: "#FFBD59" }}>
+          <h2 className="text-2xl font-bold" style={{ color: COLORS.primary }}>
             {activeService ? serviceItems.find((s) => s.id === activeService)?.label : menuItems.find((m) => m.id === activeTab)?.label}
           </h2>
         </div>
 
         {/* Content Area */}
-        <div className="flex-1 overflow-auto p-6">{renderContent()}</div>
+        <div className="flex-1 overflow-auto p-6" style={{ backgroundColor: COLORS.dark }}>
+          {renderContent()}
+        </div>
       </div>
 
       {/* Sidebar - Right Side */}
-      <div className="bg-gray-900 text-white transition-all duration-300 flex flex-col border-r border-gray-700" style={{ width: sidebarOpen ? "256px" : "80px" }}>
-        <div className="p-4 flex items-center justify-center border-b border-gray-700">
-          <h1 className={`font-bold text-xl ${!sidebarOpen && "hidden"}`} style={{ color: "#FFBD59" }}>REX</h1>
+      <div
+        className="text-white transition-all duration-300 flex flex-col border-r"
+        style={{
+          width: sidebarOpen ? "280px" : "80px",
+          backgroundColor: COLORS.darker,
+          borderRightColor: COLORS.primary,
+          borderRightWidth: "2px",
+        }}
+      >
+        <div
+          className="p-4 flex items-center justify-center border-b"
+          style={{
+            borderBottomColor: COLORS.primary,
+            borderBottomWidth: "2px",
+          }}
+        >
+          <div className="flex items-center gap-2">
+            <Zap size={28} style={{ color: COLORS.primary }} />
+            <h1 className={`font-bold text-2xl ${!sidebarOpen && "hidden"}`} style={{ color: COLORS.primary }}>
+              REX
+            </h1>
+          </div>
         </div>
 
-        <nav className="flex-1 px-2 py-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-2 py-4 space-y-1 overflow-y-auto">
           {menuItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id && !activeService;
@@ -150,12 +201,25 @@ export default function AdminDashboard() {
               <div key={item.id}>
                 <button
                   onClick={() => handleTabClick(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition justify-end ${
-                    isActive ? "text-gray-900" : "text-gray-300 hover:bg-gray-800"
-                  }`}
-                  style={isActive ? { backgroundColor: "#FFBD59" } : {}}
+                  className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition justify-end"
+                  style={{
+                    backgroundColor: isActive ? COLORS.primary : "transparent",
+                    color: isActive ? COLORS.darker : COLORS.textSecondary,
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = COLORS.card;
+                      e.currentTarget.style.color = COLORS.primary;
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive) {
+                      e.currentTarget.style.backgroundColor = "transparent";
+                      e.currentTarget.style.color = COLORS.textSecondary;
+                    }
+                  }}
                 >
-                  {sidebarOpen && <span className="text-sm">{item.label}</span>}
+                  {sidebarOpen && <span className="text-sm font-medium">{item.label}</span>}
                   {hasSubmenu ? (
                     <ChevronDown size={18} style={{ transform: servicesOpen ? "rotate(-180deg)" : "rotate(0)" }} className="transition" />
                   ) : (
@@ -176,10 +240,23 @@ export default function AdminDashboard() {
                             setActiveTab("services");
                             setActiveService(subitem.id);
                           }}
-                          className={`w-full flex items-center gap-3 px-4 py-2 rounded-lg transition justify-end text-sm ${
-                            isSubActive ? "text-gray-900" : "text-gray-400 hover:text-gray-300 hover:bg-gray-800"
-                          }`}
-                          style={isSubActive ? { backgroundColor: "#FFBD59" } : {}}
+                          className="w-full flex items-center gap-3 px-4 py-2 rounded-lg transition justify-end text-sm"
+                          style={{
+                            backgroundColor: isSubActive ? COLORS.secondary : "transparent",
+                            color: isSubActive ? COLORS.darker : COLORS.textSecondary,
+                          }}
+                          onMouseEnter={(e) => {
+                            if (!isSubActive) {
+                              e.currentTarget.style.backgroundColor = COLORS.card;
+                              e.currentTarget.style.color = COLORS.secondary;
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (!isSubActive) {
+                              e.currentTarget.style.backgroundColor = "transparent";
+                              e.currentTarget.style.color = COLORS.textSecondary;
+                            }
+                          }}
                         >
                           {subitem.label}
                           <SubIcon size={16} />
@@ -199,32 +276,49 @@ export default function AdminDashboard() {
 
 function OverviewTab({ models, voices, creators, videos, writings }: any) {
   const stats = [
-    { label: "إجمالي الموديلات", value: models.length, color: "#FFBD59" },
-    { label: "إجمالي المعلقين", value: voices.length, color: "#E8A76F" },
-    { label: "إجمالي صناع المحتوى", value: creators.length, color: "#D49A5F" },
-    { label: "إجمالي الفيديوهات", value: videos.length, color: "#C08D4F" },
-    { label: "إجمالي الكتابات", value: writings.length, color: "#A8804F" },
+    { label: "إجمالي الموديلات", value: models.length, color: COLORS.primary, icon: Users },
+    { label: "إجمالي المعلقين", value: voices.length, color: COLORS.secondary, icon: Mic },
+    { label: "إجمالي صناع المحتوى", value: creators.length, color: COLORS.info, icon: Film },
+    { label: "إجمالي الفيديوهات", value: videos.length, color: COLORS.warning, icon: Film },
+    { label: "إجمالي الكتابات", value: writings.length, color: COLORS.success, icon: PenTool },
   ];
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4" dir="rtl">
-      {stats.map((stat, i) => (
-        <div key={i} className="text-white p-6 rounded-lg shadow" style={{ backgroundColor: stat.color }}>
-          <p className="text-sm opacity-90">{stat.label}</p>
-          <p className="text-3xl font-bold mt-2">{stat.value}</p>
-        </div>
-      ))}
+      {stats.map((stat, i) => {
+        const Icon = stat.icon;
+        return (
+          <div
+            key={i}
+            className="p-6 rounded-xl shadow-lg border-l-4 transition hover:shadow-xl hover:scale-105"
+            style={{
+              backgroundColor: COLORS.card,
+              borderLeftColor: stat.color,
+            }}
+          >
+            <div className="flex items-center justify-between mb-4">
+              <Icon size={32} style={{ color: stat.color }} />
+            </div>
+            <p className="text-sm" style={{ color: COLORS.textSecondary }}>
+              {stat.label}
+            </p>
+            <p className="text-4xl font-bold mt-2" style={{ color: stat.color }}>
+              {stat.value}
+            </p>
+          </div>
+        );
+      })}
     </div>
   );
 }
 
 function ServicesOverviewTab({ models, voices, creators, videos, writings, onSelectService }: any) {
   const services = [
-    { id: "models", label: "الموديلات", count: models.length, icon: Users },
-    { id: "voices", label: "التعليق الصوتي", count: voices.length, icon: Mic },
-    { id: "creators", label: "صناع المحتوى", count: creators.length, icon: Film },
-    { id: "videos", label: "إنتاج الفيديو", count: videos.length, icon: Film },
-    { id: "writers", label: "كتابة المحتوى", count: writings.length, icon: PenTool },
+    { id: "models", label: "الموديلات", count: models.length, icon: Users, color: COLORS.primary },
+    { id: "voices", label: "التعليق الصوتي", count: voices.length, icon: Mic, color: COLORS.secondary },
+    { id: "creators", label: "صناع المحتوى", count: creators.length, icon: Film, color: COLORS.info },
+    { id: "videos", label: "إنتاج الفيديو", count: videos.length, icon: Film, color: COLORS.warning },
+    { id: "writers", label: "كتابة المحتوى", count: writings.length, icon: PenTool, color: COLORS.success },
   ];
 
   return (
@@ -235,16 +329,22 @@ function ServicesOverviewTab({ models, voices, creators, videos, writings, onSel
           <button
             key={service.id}
             onClick={() => onSelectService(service.id)}
-            className="bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition text-right text-white border border-gray-700"
+            className="rounded-xl shadow-lg p-6 hover:shadow-2xl transition text-right border-t-4 hover:scale-105"
+            style={{
+              backgroundColor: COLORS.card,
+              borderTopColor: service.color,
+            }}
           >
             <div className="flex items-center justify-between mb-4">
-              <Icon size={32} style={{ color: "#FFBD59" }} />
-              <span className="text-2xl font-bold" style={{ color: "#FFBD59" }}>
+              <Icon size={32} style={{ color: service.color }} />
+              <span className="text-3xl font-bold" style={{ color: service.color }}>
                 {service.count}
               </span>
             </div>
-            <p className="font-semibold text-white">{service.label}</p>
-            <p className="text-sm text-gray-400 mt-2">اضغط للإدارة</p>
+            <p className="font-semibold text-white text-lg">{service.label}</p>
+            <p className="text-sm mt-2" style={{ color: COLORS.textSecondary }}>
+              اضغط للإدارة
+            </p>
           </button>
         );
       })}
@@ -254,272 +354,152 @@ function ServicesOverviewTab({ models, voices, creators, videos, writings, onSel
 
 function OrdersTab() {
   return (
-    <div className="bg-gray-800 rounded-lg shadow p-6 text-white border border-gray-700" dir="rtl">
-      <div className="flex items-center justify-between mb-4">
-        <Button className="gap-2" style={{ backgroundColor: "#FFBD59", color: "#1F2937" }}>
-          <Plus size={18} /> طلب جديد
-        </Button>
-        <h3 className="text-xl font-bold text-white">إدارة الطلبات</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-700 border-b border-gray-600">
-            <tr>
-              <th className="px-4 py-2 text-right text-white">رقم الطلب</th>
-              <th className="px-4 py-2 text-right text-white">العميل</th>
-              <th className="px-4 py-2 text-right text-white">الخدمة</th>
-              <th className="px-4 py-2 text-right text-white">الحالة</th>
-              <th className="px-4 py-2 text-right text-white">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b border-gray-700 hover:bg-gray-700">
-              <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
-                لا توجد طلبات حالياً
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
+      <h3 className="text-xl font-bold mb-4" style={{ color: COLORS.primary }}>
+        الطلبات
+      </h3>
+      <p style={{ color: COLORS.textSecondary }}>قسم الطلبات قيد التطوير...</p>
     </div>
   );
 }
 
 function ClientsTab() {
   return (
-    <div className="bg-gray-800 rounded-lg shadow p-6 text-white border border-gray-700" dir="rtl">
-      <div className="flex items-center justify-between mb-4">
-        <Button className="gap-2" style={{ backgroundColor: "#FFBD59", color: "#1F2937" }}>
-          <Plus size={18} /> عميل جديد
-        </Button>
-        <h3 className="text-xl font-bold text-white">إدارة العملاء</h3>
-      </div>
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-700 border-b border-gray-600">
-            <tr>
-              <th className="px-4 py-2 text-right text-white">الاسم</th>
-              <th className="px-4 py-2 text-right text-white">الإيميل</th>
-              <th className="px-4 py-2 text-right text-white">الجوال</th>
-              <th className="px-4 py-2 text-right text-white">عدد الطلبات</th>
-              <th className="px-4 py-2 text-right text-white">الإجراءات</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr className="border-b border-gray-700 hover:bg-gray-700">
-              <td colSpan={5} className="px-4 py-8 text-center text-gray-400">
-                لا يوجد عملاء حالياً
-              </td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+    <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
+      <h3 className="text-xl font-bold mb-4" style={{ color: COLORS.primary }}>
+        العملاء
+      </h3>
+      <p style={{ color: COLORS.textSecondary }}>قسم العملاء قيد التطوير...</p>
     </div>
   );
 }
 
 function MediaTab() {
   return (
-    <div className="bg-gray-800 rounded-lg shadow p-6 text-white border border-gray-700" dir="rtl">
-      <div className="flex items-center justify-between mb-4">
-        <Button className="gap-2" style={{ backgroundColor: "#FFBD59", color: "#1F2937" }}>
-          <Plus size={18} /> رفع وسائط
-        </Button>
-        <h3 className="text-xl font-bold text-white">إدارة الوسائط</h3>
-      </div>
-      <div className="border-2 border-dashed border-gray-600 rounded-lg p-12 text-center">
-        <ImageIcon size={48} className="mx-auto mb-4" style={{ color: "#FFBD59" }} />
-        <p className="text-gray-400">اسحب الملفات هنا أو انقر للرفع</p>
-      </div>
+    <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
+      <h3 className="text-xl font-bold mb-4" style={{ color: COLORS.primary }}>
+        الوسائط
+      </h3>
+      <p style={{ color: COLORS.textSecondary }}>قسم الوسائط قيد التطوير...</p>
     </div>
   );
 }
 
 function CMSTab() {
-  const pages = [
-    "الصفحة الرئيسية",
-    "من نحن",
-    "خدماتنا",
-    "الأسئلة الشائعة",
-    "صفحة المودلز",
-    "صفحة التعليق الصوتي",
-    "سياسة الخصوصية",
-    "الشروط والأحكام",
-  ];
-
   return (
-    <div className="bg-gray-800 rounded-lg shadow p-6 text-white border border-gray-700" dir="rtl">
-      <h3 className="text-xl font-bold mb-4">إدارة المحتوى</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {pages.map((page, i) => (
-          <div key={i} className="border border-gray-700 rounded-lg p-4 hover:shadow-lg transition bg-gray-700">
-            <p className="font-semibold mb-3 text-white">{page}</p>
-            <div className="flex gap-2">
-              <Button size="sm" variant="outline" className="flex-1 text-white border-gray-600 hover:bg-gray-600">
-                تعديل
-              </Button>
-              <Button size="sm" variant="outline" className="text-white border-gray-600 hover:bg-gray-600">
-                عرض
-              </Button>
-            </div>
-          </div>
-        ))}
-      </div>
+    <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
+      <h3 className="text-xl font-bold mb-4" style={{ color: COLORS.primary }}>
+        المحتوى
+      </h3>
+      <p style={{ color: COLORS.textSecondary }}>قسم المحتوى قيد التطوير...</p>
     </div>
   );
 }
 
 function SettingsTab() {
   return (
-    <div className="bg-gray-800 rounded-lg shadow p-6 text-white border border-gray-700" dir="rtl">
-      <h3 className="text-xl font-bold mb-6 text-white">الإعدادات</h3>
-      <div className="space-y-6 max-w-2xl">
-        <div className="border-b border-gray-700 pb-4">
-          <h4 className="font-semibold mb-3 text-white">إعدادات الموقع</h4>
-          <div className="space-y-3">
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">اسم الموقع</label>
-              <Input defaultValue="REX" className="bg-gray-700 border-gray-600 text-white" />
-            </div>
-            <div>
-              <label className="block text-sm text-gray-400 mb-1">الشعار</label>
-              <Input type="file" className="bg-gray-700 border-gray-600 text-white" />
-            </div>
-          </div>
-        </div>
-
-        <div className="border-b border-gray-700 pb-4">
-          <h4 className="font-semibold mb-3 text-white">بوابات الدفع</h4>
-          <div className="space-y-2 text-sm">
-            <label className="flex items-center gap-2 text-gray-300">
-              <input type="checkbox" /> Stripe
-            </label>
-            <label className="flex items-center gap-2 text-gray-300">
-              <input type="checkbox" /> Tap
-            </label>
-            <label className="flex items-center gap-2 text-gray-300">
-              <input type="checkbox" /> Paymob
-            </label>
-          </div>
-        </div>
-
-        <div className="border-b border-gray-700 pb-4">
-          <h4 className="font-semibold mb-3 text-white">الإشعارات</h4>
-          <div className="space-y-2 text-sm">
-            <label className="flex items-center gap-2 text-gray-300">
-              <input type="checkbox" defaultChecked /> إشعارات البريد
-            </label>
-            <label className="flex items-center gap-2 text-gray-300">
-              <input type="checkbox" defaultChecked /> إشعارات النظام
-            </label>
-          </div>
-        </div>
-
-        <Button className="w-full" style={{ backgroundColor: "#FFBD59", color: "#1F2937" }}>
-          حفظ الإعدادات
-        </Button>
-      </div>
+    <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
+      <h3 className="text-xl font-bold mb-4" style={{ color: COLORS.primary }}>
+        الإعدادات
+      </h3>
+      <p style={{ color: COLORS.textSecondary }}>قسم الإعدادات قيد التطوير...</p>
     </div>
   );
 }
 
 function ReportsTab() {
-  const reports = [
-    { title: "الدخل اليومي", icon: "📊" },
-    { title: "الدخل الأسبوعي", icon: "📈" },
-    { title: "الدخل الشهري", icon: "💰" },
-    { title: "أكثر المواهب مبيعاً", icon: "⭐" },
-    { title: "معدل إكمال الطلبات", icon: "✅" },
-    { title: "أعلى 10 عملاء", icon: "👥" },
-  ];
-
   return (
-    <div className="bg-gray-800 rounded-lg shadow p-6 text-white border border-gray-700" dir="rtl">
-      <h3 className="text-xl font-bold mb-4 text-white">التقارير</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {reports.map((report, i) => (
-          <button key={i} className="border border-gray-700 rounded-lg p-4 hover:shadow-lg transition text-center hover:bg-gray-700 bg-gray-700">
-            <div className="text-3xl mb-2">{report.icon}</div>
-            <p className="font-semibold text-white">{report.title}</p>
-          </button>
-        ))}
-      </div>
+    <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
+      <h3 className="text-xl font-bold mb-4" style={{ color: COLORS.primary }}>
+        التقارير
+      </h3>
+      <p style={{ color: COLORS.textSecondary }}>قسم التقارير قيد التطوير...</p>
     </div>
   );
 }
 
-interface DataTableProps {
-  title: string;
-  data: any[];
-  columns: string[];
-  onDelete: (id: number) => void;
-}
-
-function DataTable({ title, data, columns, onDelete }: DataTableProps) {
-  const columnLabels: Record<string, string> = {
-    name: "الاسم",
-    gender: "الجنس",
-    age: "العمر",
-    voiceType: "نوع الصوت",
-    platforms: "المنصات",
-    title: "العنوان",
-    productionType: "نوع الإنتاج",
-    contentType: "نوع المحتوى",
-  };
-
+function DataTable({ title, data, columns, onDelete }: any) {
   return (
-    <div className="bg-gray-800 rounded-lg shadow text-white border border-gray-700" dir="rtl">
-      <div className="p-6 border-b flex items-center justify-between border-gray-700" style={{ borderBottomColor: "#FFBD59" }}>
-        <Button className="gap-2" style={{ backgroundColor: "#FFBD59", color: "#1F2937" }}>
-          <Plus size={18} /> إضافة جديد
-        </Button>
-        <h3 className="text-xl font-bold text-white">{title}</h3>
+    <div className="p-6 rounded-xl" style={{ backgroundColor: COLORS.card }}>
+      <div className="flex items-center justify-between mb-6">
+        <h3 className="text-xl font-bold" style={{ color: COLORS.primary }}>
+          {title}
+        </h3>
+        <button
+          className="flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition"
+          style={{
+            backgroundColor: COLORS.primary,
+            color: COLORS.darker,
+          }}
+        >
+          <Plus size={18} />
+          إضافة جديد
+        </button>
       </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full text-sm">
-          <thead className="bg-gray-700 border-b border-gray-600">
-            <tr>
-              <th className="px-4 py-3 text-right text-white">الإجراءات</th>
-              {columns.map((col) => (
-                <th key={col} className="px-4 py-3 text-right text-white">
-                  {columnLabels[col] || col}
+      {data.length === 0 ? (
+        <p style={{ color: COLORS.textSecondary }}>لا توجد بيانات</p>
+      ) : (
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr style={{ borderBottomColor: COLORS.border, borderBottomWidth: "1px" }}>
+                {columns.map((col: string) => (
+                  <th
+                    key={col}
+                    className="px-4 py-3 text-right font-semibold"
+                    style={{ color: COLORS.primary }}
+                  >
+                    {col}
+                  </th>
+                ))}
+                <th className="px-4 py-3 text-right font-semibold" style={{ color: COLORS.primary }}>
+                  الإجراءات
                 </th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data.length === 0 ? (
-              <tr>
-                <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-gray-400">
-                  لا توجد بيانات
-                </td>
               </tr>
-            ) : (
-              data.map((item) => (
-                <tr key={item.id} className="border-b border-gray-700 hover:bg-gray-700">
-                  <td className="px-4 py-3 flex gap-2 justify-end">
-                    <button className="p-1 hover:bg-gray-600 rounded" style={{ color: "#FFBD59" }}>
-                      <Eye size={16} />
-                    </button>
-                    <button className="p-1 hover:bg-gray-600 rounded" style={{ color: "#FFBD59" }}>
+            </thead>
+            <tbody>
+              {data.map((item: any, idx: number) => (
+                <tr
+                  key={idx}
+                  style={{
+                    backgroundColor: idx % 2 === 0 ? COLORS.dark : "transparent",
+                    borderBottomColor: COLORS.border,
+                    borderBottomWidth: "1px",
+                  }}
+                >
+                  {columns.map((col: string) => (
+                    <td key={col} className="px-4 py-3" style={{ color: COLORS.text }}>
+                      {item[col]}
+                    </td>
+                  ))}
+                  <td className="px-4 py-3 flex gap-2">
+                    <button
+                      className="p-2 rounded-lg transition"
+                      style={{
+                        backgroundColor: COLORS.info,
+                        color: COLORS.text,
+                      }}
+                    >
                       <Edit2 size={16} />
                     </button>
-                    <button onClick={() => onDelete(item.id)} className="p-1 text-red-500 hover:bg-gray-600 rounded">
+                    <button
+                      className="p-2 rounded-lg transition"
+                      style={{
+                        backgroundColor: COLORS.warning,
+                        color: COLORS.text,
+                      }}
+                      onClick={() => onDelete(item.id)}
+                    >
                       <Trash2 size={16} />
                     </button>
                   </td>
-                  {columns.map((col) => (
-                    <td key={col} className="px-4 py-3 text-gray-300">
-                      {String(item[col] || "-")}
-                    </td>
-                  ))}
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   );
 }
