@@ -133,18 +133,18 @@ export const appRouter = router({
         const db = await getDb();
         if (!db) throw new Error("Database not available");
         
-        // تنظيف البيانات وإزالة الحقول غير المطلوبة
+        // تنظيف البيانات وإزالة الحقول غير المطلوبة أو الفارغة
         const cleanData: any = {
           name: input.name,
         };
         
-        // إضافة الحقول الاختيارية فقط إذا كانت موجودة
-        if (input.bio) cleanData.bio = input.bio;
-        if (input.profileImage) cleanData.profileImage = input.profileImage;
-        if (input.portfolioUrl) cleanData.portfolioUrl = input.portfolioUrl;
-        if (input.platforms) cleanData.platforms = input.platforms;
-        if (input.contentTypes) cleanData.contentTypes = input.contentTypes;
-        if (input.sampleWorks) cleanData.sampleWorks = input.sampleWorks;
+        // إضافة الحقول الاختيارية فقط إذا كانت موجودة وليست فارغة (null, undefined, or empty string)
+        if (input.bio && input.bio.trim() !== "") cleanData.bio = input.bio;
+        if (input.profileImage && input.profileImage.trim() !== "") cleanData.profileImage = input.profileImage;
+        if (input.portfolioUrl && input.portfolioUrl.trim() !== "") cleanData.portfolioUrl = input.portfolioUrl;
+        if (input.platforms && input.platforms.trim() !== "") cleanData.platforms = input.platforms;
+        if (input.contentTypes && input.contentTypes.trim() !== "") cleanData.contentTypes = input.contentTypes;
+        if (input.sampleWorks && input.sampleWorks.trim() !== "") cleanData.sampleWorks = input.sampleWorks;
         
         const result = await db.insert(contentCreators).values(cleanData);
         return { success: true, id: result[0].insertId };
