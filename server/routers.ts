@@ -14,7 +14,7 @@ import { getDb } from "./db";
 import { models, contentCreators, videoProductions, voiceArtists, contentWriting, banners } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 
-// دالة مساعدة لتنظيف البيانات من القيم الفارغة
+// دالة مساعدة لتنظيف البيانات من القيم الفارغة لمنع أخطاء SQL
 function cleanInputData(input: any) {
   const clean: any = {};
   for (const key in input) {
